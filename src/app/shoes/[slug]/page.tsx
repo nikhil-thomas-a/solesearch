@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -78,8 +79,9 @@ function PriceChart({ history, fmt }: { history: { month: string; price: number 
   );
 }
 
-export default function ShoeDetailPage({ params }: { params: { slug: string } }) {
-  const shoe = SHOES_BY_SLUG[params.slug];
+export default function ShoeDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = React.use(params);
+  const shoe = SHOES_BY_SLUG[slug];
   if (!shoe) return notFound();
   const { fmt } = useRegion();
 
