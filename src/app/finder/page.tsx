@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
 import type { FootProfile } from "@/types";
+import { useRegion } from "@/lib/regionContext";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -149,13 +150,50 @@ function StepUse({ profile, update }: { profile: Partial<FootProfile>; update: (
   );
 }
 
+// Size helpers
+const SIZE_SYSTEMS = ["UK", "US", "EU"] as const;
+type SizeSystem = typeof SIZE_SYSTEMS[number];
+function fromUK(uk: number, sys: SizeSystem): number {
+  if (sys === "UK") return uk;
+  if (sys === "US") return Math.round((uk + 1) * 2) / 2;
+  return Math.round((uk * 1.27 + 33) * 2) / 2;
+}
+function sizeLabel(uk: number, sys: SizeSystem): string {
+  return `${sys} ${fromUK(uk, sys)}`;
+}
+
 function StepFoot({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
+  const [sizeSystem, setSizeSystem] = useState<SizeSystem>("UK");
+  const ukSize = profile.sizeUS ? profile.sizeUS - 1 : 9;
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
       <div>
-        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 12, fontFamily: "'DM Mono', monospace" }}>Your shoe size</p>
-        <SliderField label="Shoe size" sublabel="(US)" value={profile.sizeUS ?? 10} min={4} max={16} unit="" onChange={(v) => update("sizeUS", v)} />
-        <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>Not sure? Measure heel to longest toe in cm. Size 8 ≈ 26cm, size 10 ≈ 27.9cm, size 12 ≈ 30cm.</p>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", fontFamily: "'DM Mono', monospace" }}>Your shoe size</p>
+          <div className="size-toggle">
+            {SIZE_SYSTEMS.map(s => (
+              <button key={s} className={sizeSystem === s ? "active" : ""} onClick={() => setSizeSystem(s)}>{s}</button>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 10 }}>
+          <span style={{ fontSize: 14, color: "var(--muted)" }}>Selected size</span>
+          <span style={{ fontSize: 24, fontWeight: 500, color: "var(--accent)", fontFamily: "'Fraunces', serif" }}>
+            {sizeLabel(ukSize, sizeSystem)}
+          </span>
+        </div>
+        <input type="range" min={3} max={15} step={0.5} value={ukSize}
+          onChange={e => update("sizeUS", Number(e.target.value) + 1)}
+          style={{ width: "100%", accentColor: "var(--accent)", height: 4 }} />
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)", fontFamily: "'DM Mono', monospace", marginTop: 6 }}>
+          <span>{sizeLabel(3, sizeSystem)}</span>
+          <span>{sizeLabel(9, sizeSystem)}</span>
+          <span>{sizeLabel(15, sizeSystem)}</span>
+        </div>
+        <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 8 }}>
+          Unsure? Measure heel to longest toe in cm. UK 7 ≈ 26cm · UK 9 ≈ 27.9cm · UK 11 ≈ 30cm
+        </p>
       </div>
 
       <div>
@@ -264,27 +302,40 @@ function StepFeel({ profile, update }: { profile: Partial<FootProfile>; update: 
 }
 
 function StepBudget({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
-  const budget = profile.budget ?? 150;
+  const { fmt, convert, region } = useRegion();
+  // Budget stored in USD internally, displayed in local currency
+  const budgetUSD = profile.budget ?? 150;
+  const displayBudget = budgetUSD >= 400 ? "No limit" : fmt(budgetUSD);
+  // Quick picks in USD — displayed in local currency
+  const quickPicks = [75, 120, 180, 250];
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 500 }}>
-      <SliderField label="Maximum budget" value={budget} min={30} max={400} unit="$"
-        formatVal={(v) => v >= 400 ? "No limit" : `$${v}`} onChange={(v) => update("budget", v)} />
+      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+        <span style={{ fontSize: 13, color: "var(--muted)" }}>Showing prices in</span>
+        <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 12, padding: "3px 10px", borderRadius: 20, background: "rgba(88,166,255,0.1)", color: "var(--accent)", border: "1px solid rgba(88,166,255,0.2)" }}>
+          {region.currency} · {region.symbol}
+        </span>
+        <span style={{ fontSize: 12, color: "var(--muted)" }}>(change in nav)</span>
+      </div>
+      <SliderField label="Maximum budget" value={budgetUSD} min={30} max={400} unit=""
+        formatVal={(v) => v >= 400 ? "No limit" : fmt(v)} onChange={(v) => update("budget", v)} />
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
-        {[75, 120, 180, 250].map((b) => (
+        {quickPicks.map((b) => (
           <button key={b} onClick={() => update("budget", b)} style={{
-            padding: "10px 0", borderRadius: 8, fontFamily: "'DM Mono', monospace", fontSize: 13, cursor: "pointer",
-            border: `1.5px solid ${budget === b ? "var(--accent)" : "var(--border)"}`,
-            background: budget === b ? "rgba(200,75,49,0.06)" : "var(--bg2)",
-            color: budget === b ? "var(--accent)" : "var(--muted)",
+            padding: "10px 0", borderRadius: 8, fontFamily: "'DM Mono', monospace", fontSize: 12, cursor: "pointer",
+            border: `1.5px solid ${budgetUSD === b ? "var(--accent)" : "var(--border)"}`,
+            background: budgetUSD === b ? "rgba(88,166,255,0.06)" : "var(--bg2)",
+            color: budgetUSD === b ? "var(--accent)" : "var(--muted)",
             transition: "all 0.15s",
-          }}>${b}</button>
+          }}>{fmt(b)}</button>
         ))}
       </div>
       <div style={{ padding: "16px 20px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>
-        {budget < 80 && "Budget range — we'll find the best value options available."}
-        {budget >= 80 && budget < 130 && "Sweet spot — lots of great shoes in this range from major brands."}
-        {budget >= 130 && budget < 200 && "Premium range — access to the top performance models."}
-        {budget >= 200 && "No compromises — the best of everything is within reach."}
+        {budgetUSD < 80 && "Budget range — we'll find the best value options available."}
+        {budgetUSD >= 80 && budgetUSD < 130 && "Sweet spot — lots of great shoes in this range from major brands."}
+        {budgetUSD >= 130 && budgetUSD < 200 && "Premium range — access to the top performance models."}
+        {budgetUSD >= 200 && "No compromises — the best of everything is within reach."}
       </div>
     </div>
   );
@@ -304,7 +355,11 @@ export default function FinderPage() {
   const prev = () => { if (step > 0) setStep(s => s - 1); };
   const submit = async () => {
     setLoading(true);
-    await new Promise(r => setTimeout(r, 1600));
+    // Persist profile so results page can run the engine
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem("solesearch_profile", JSON.stringify(profile));
+    }
+    await new Promise(r => setTimeout(r, 1200));
     window.location.href = "/finder/results";
   };
 
