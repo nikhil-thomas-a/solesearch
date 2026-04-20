@@ -2,115 +2,148 @@
 
 import { useState } from "react";
 import { ArrowRight, ArrowLeft, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 import type { FootProfile } from "@/types";
 
-// ─── Step definitions ─────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const STEPS = [
-  { id: "use",      title: "What are you shopping for?",    subtitle: "We'll tailor the whole experience to your use case." },
-  { id: "foot",     title: "Tell us about your feet.",       subtitle: "This is the most important part — be as accurate as you can." },
-  { id: "body",     title: "Body & biomechanics.",           subtitle: "This helps us match cushioning, stability, and support needs." },
-  { id: "injuries", title: "Any injury history?",            subtitle: "Select all that apply. This helps us avoid shoes that could aggravate issues." },
-  { id: "feel",     title: "How do you like your shoes to feel?", subtitle: "Pure preference — no wrong answers." },
-  { id: "budget",   title: "What's your budget?",            subtitle: "We'll show you the best options in your range." },
-];
-
-const CATEGORIES = [
-  { value: "road-running",   label: "Road running",   desc: "Pavement, treadmill" },
-  { value: "trail-running",  label: "Trail running",   desc: "Dirt, rocks, mud" },
-  { value: "sneakers",       label: "Casual / lifestyle", desc: "Everyday wear" },
-  { value: "gym-training",   label: "Gym & training",  desc: "Cross-training, HIIT" },
-  { value: "basketball",     label: "Basketball",      desc: "Court sports" },
-  { value: "hiking",         label: "Hiking",          desc: "Trails, mountains" },
-  { value: "walking",        label: "Walking",         desc: "All-day comfort" },
-  { value: "work-safety",    label: "Work / safety",   desc: "Standing, hazardous" },
-];
-
-const INJURIES = [
-  "Plantar fasciitis", "Shin splints", "IT band syndrome",
-  "Achilles tendinitis", "Bunions", "Morton's neuroma",
-  "Knee pain", "Back pain", "Flat feet", "None",
-];
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function OptionCard({
-  label, desc, selected, onClick,
-}: { label: string; desc?: string; selected: boolean; onClick: () => void }) {
+function OptionCard({ label, desc, guide, emoji, selected, onClick }: {
+  label: string; desc?: string; guide?: string; emoji?: string;
+  selected: boolean; onClick: () => void;
+}) {
   return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex flex-col gap-1 p-4 text-left rounded-sm border transition-all duration-150",
-        selected
-          ? "border-[rgba(232,255,74,0.5)] bg-[rgba(232,255,74,0.06)] text-[#F0EEE8]"
-          : "border-[rgba(255,255,255,0.08)] bg-[#111111] text-[#888580] hover:border-[rgba(255,255,255,0.18)] hover:text-[#F0EEE8]"
-      )}
-    >
-      <span className="font-medium text-sm">{label}</span>
-      {desc && <span className="font-mono text-[10px] opacity-70">{desc}</span>}
+    <button onClick={onClick} className={`option-card${selected ? " selected" : ""}`}
+      style={{ width: "100%", textAlign: "left" }}>
+      {emoji && <span style={{ fontSize: 28, marginBottom: 4, display: "block" }}>{emoji}</span>}
+      <span style={{ fontSize: 15, fontWeight: 500, color: "var(--text)", display: "block" }}>{label}</span>
+      {desc && <span style={{ fontSize: 13, color: "var(--muted)", display: "block", marginTop: 2 }}>{desc}</span>}
+      {guide && <span style={{ fontSize: 11, color: "var(--accent)", display: "block", marginTop: 6, fontFamily: "'DM Mono', monospace" }}>{guide}</span>}
       {selected && (
-        <span className="absolute top-2 right-2">
-          <Check size={12} color="#E8FF4A" />
+        <span style={{ position: "absolute", top: 10, right: 10, background: "var(--accent)", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <Check size={11} color="#fff" />
         </span>
       )}
     </button>
   );
 }
 
-function SliderField({
-  label, value, min, max, unit, onChange,
-}: { label: string; value: number; min: number; max: number; unit: string; onChange: (v: number) => void }) {
+function SliderField({ label, sublabel, value, min, max, unit, formatVal, onChange }: {
+  label: string; sublabel?: string; value: number; min: number; max: number;
+  unit: string; formatVal?: (v: number) => string; onChange: (v: number) => void;
+}) {
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex justify-between">
-        <span className="font-mono text-xs text-[#888580] uppercase tracking-widest">{label}</span>
-        <span className="font-mono text-sm text-[#E8FF4A]">{value} {unit}</span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+        <div>
+          <span style={{ fontSize: 15, fontWeight: 500 }}>{label}</span>
+          {sublabel && <span style={{ fontSize: 13, color: "var(--muted)", marginLeft: 8 }}>{sublabel}</span>}
+        </div>
+        <span style={{ fontSize: 20, fontWeight: 500, color: "var(--accent)", fontFamily: "'Fraunces', serif" }}>
+          {formatVal ? formatVal(value) : `${value}${unit}`}
+        </span>
       </div>
-      <input
-        type="range" min={min} max={max} value={value} step={1}
+      <input type="range" min={min} max={max} value={value} step={1}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full accent-[#E8FF4A]"
-      />
-      <div className="flex justify-between font-mono text-[10px] text-[#888580]">
-        <span>{min} {unit}</span><span>{max} {unit}</span>
+        style={{ width: "100%", accentColor: "var(--accent)", height: 4 }} />
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "var(--muted)", fontFamily: "'DM Mono', monospace" }}>
+        <span>{min}{unit}</span><span>{max}{unit}</span>
       </div>
     </div>
   );
 }
 
-function SelectField({
-  label, value, options, onChange,
-}: { label: string; value: string; options: { value: string; label: string }[]; onChange: (v: string) => void }) {
-  return (
-    <div className="flex flex-col gap-1.5">
-      <span className="font-mono text-[10px] text-[#888580] uppercase tracking-widest">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="input-ss"
-      >
-        <option value="">Select…</option>
-        {options.map((o) => (
-          <option key={o.value} value={o.value}>{o.label}</option>
-        ))}
-      </select>
-    </div>
-  );
-}
+// ─── Steps ────────────────────────────────────────────────────────────────────
+
+const STEPS = [
+  {
+    id: "use", title: "What are you mainly shopping for?",
+    subtitle: "Pick the one that fits best — you can always browse other categories later.",
+  },
+  {
+    id: "foot", title: "Tell us about your feet.",
+    subtitle: "Don't worry about technical terms — we'll explain everything with pictures.",
+  },
+  {
+    id: "body", title: "A bit about your body and activity.",
+    subtitle: "This helps us get the cushioning and support right for you.",
+  },
+  {
+    id: "injuries", title: "Any pain or discomfort you've had?",
+    subtitle: "We'll steer clear of shoes that could make these worse.",
+  },
+  {
+    id: "feel", title: "How do you want your shoes to feel?",
+    subtitle: "Pure personal preference — no wrong answers here.",
+  },
+  {
+    id: "budget", title: "What's your budget?",
+    subtitle: "We'll show the best options within your range, and flag when a small stretch is worth it.",
+  },
+];
+
+const SHOE_USES = [
+  { value: "road-running",  label: "Running on roads",    desc: "Pavement, pavements, treadmill",   emoji: "🏃" },
+  { value: "trail-running", label: "Running off-road",    desc: "Dirt trails, mud, rocks",           emoji: "🏔️" },
+  { value: "sneakers",      label: "Everyday casual",     desc: "Walking around, hanging out",       emoji: "👟" },
+  { value: "gym-training",  label: "Gym & working out",   desc: "Weights, classes, cross-training",  emoji: "🏋️" },
+  { value: "basketball",    label: "Basketball / courts", desc: "Indoor or outdoor court sports",    emoji: "🏀" },
+  { value: "hiking",        label: "Hiking & outdoors",   desc: "Long walks, trails, mountains",     emoji: "🥾" },
+  { value: "walking",       label: "Walking & standing",  desc: "Daily commute, long days on feet",  emoji: "🚶" },
+  { value: "work-safety",   label: "Work / job",          desc: "Safety requirements, long shifts",  emoji: "🦺" },
+];
+
+const ARCH_OPTIONS = [
+  {
+    value: "flat", label: "Flat feet",
+    desc: "Your whole foot sole touches the ground when you stand",
+    guide: "Wet foot test: footprint shows almost full sole",
+    emoji: "👣",
+  },
+  {
+    value: "neutral", label: "Normal arches",
+    desc: "You see a curve along the inside of your foot",
+    guide: "Wet foot test: footprint shows a curve on the inside",
+    emoji: "🦶",
+  },
+  {
+    value: "high", label: "High arches",
+    desc: "Very little of the inside of your foot touches the ground",
+    guide: "Wet foot test: footprint shows mostly heel and ball",
+    emoji: "👠",
+  },
+];
+
+const WIDTH_OPTIONS = [
+  { value: "narrow",     label: "Shoes often feel loose",     desc: "Too much space in most shoes",           emoji: "↔️" },
+  { value: "regular",    label: "Most shoes fit fine",         desc: "Standard width works for me",            emoji: "✅" },
+  { value: "wide",       label: "Shoes feel tight or cramped", desc: "My toes or sides get squished",          emoji: "😣" },
+  { value: "extra-wide", label: "Most shoes are way too tight", desc: "I really struggle to find fitting shoes", emoji: "‼️" },
+];
+
+const CUSHION_OPTIONS = [
+  { value: "firm",   label: "I want to feel the ground",   desc: "Thin, responsive — like barefoot but protected", emoji: "⚡" },
+  { value: "medium", label: "Somewhere in the middle",     desc: "Some protection, still connected to the ground",  emoji: "⚖️" },
+  { value: "plush",  label: "I want maximum comfort",      desc: "Soft, cushioned — like walking on clouds",        emoji: "☁️" },
+];
+
+const INJURY_OPTIONS = [
+  { value: "plantar-fasciitis", label: "Heel pain in the morning",    desc: "Sharp pain under heel when you first get up" },
+  { value: "shin-splints",      label: "Shin pain when running",       desc: "Aching along the front of your lower leg" },
+  { value: "knee-pain",         label: "Knee pain",                    desc: "During or after activity" },
+  { value: "back-pain",         label: "Lower back pain",              desc: "Especially after standing or walking long" },
+  { value: "bunions",           label: "Bony bump at big toe joint",   desc: "Big toe pushes toward other toes" },
+  { value: "achilles",          label: "Achilles / back-of-heel pain", desc: "Tightness or pain above the heel" },
+  { value: "flat-feet",         label: "Flat feet",                    desc: "No visible arch, feet roll inward" },
+  { value: "none",              label: "No issues — all good",         desc: "No current pain or foot problems" },
+];
 
 // ─── Step panels ─────────────────────────────────────────────────────────────
 
 function StepUse({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 relative">
-      {CATEGORIES.map((c) => (
-        <OptionCard
-          key={c.value} label={c.label} desc={c.desc}
-          selected={profile.primaryUse === c.value}
-          onClick={() => update("primaryUse", c.value)}
-        />
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(170px, 1fr))", gap: 12 }}>
+      {SHOE_USES.map((c) => (
+        <OptionCard key={c.value} label={c.label} desc={c.desc} emoji={c.emoji}
+          selected={profile.primaryUse === c.value} onClick={() => update("primaryUse", c.value)} />
       ))}
     </div>
   );
@@ -118,72 +151,84 @@ function StepUse({ profile, update }: { profile: Partial<FootProfile>; update: (
 
 function StepFoot({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <SliderField label="Shoe size (US)" value={profile.sizeUS ?? 10} min={4} max={16} unit="" onChange={(v) => update("sizeUS", v)} />
-      <SelectField label="Foot width" value={profile.width ?? ""} onChange={(v) => update("width", v)} options={[
-        { value: "narrow",      label: "Narrow (B/C)" },
-        { value: "regular",     label: "Regular (D)" },
-        { value: "wide",        label: "Wide (2E)" },
-        { value: "extra-wide",  label: "Extra wide (4E+)" },
-      ]} />
-      <SelectField label="Arch type" value={profile.archType ?? ""} onChange={(v) => update("archType", v)} options={[
-        { value: "flat",    label: "Flat — low arches" },
-        { value: "neutral", label: "Neutral — medium arches" },
-        { value: "high",    label: "High arches" },
-      ]} />
-      <SelectField label="Toe shape" value={profile.toeShape ?? ""} onChange={(v) => update("toeShape", v)} options={[
-        { value: "tapered", label: "Tapered — big toe longest" },
-        { value: "square",  label: "Square — toes similar length" },
-        { value: "wide",    label: "Wide — broad toe spread" },
-      ]} />
-      <SelectField label="Instep height" value={profile.instepHeight ?? ""} onChange={(v) => update("instepHeight", v)} options={[
-        { value: "low",    label: "Low instep" },
-        { value: "medium", label: "Medium instep" },
-        { value: "high",   label: "High instep" },
-      ]} />
-      <SelectField label="Heel width" value={profile.heelWidth ?? ""} onChange={(v) => update("heelWidth", v)} options={[
-        { value: "narrow",  label: "Narrow heel" },
-        { value: "regular", label: "Regular heel" },
-        { value: "wide",    label: "Wide heel" },
-      ]} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 32 }}>
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 12, fontFamily: "'DM Mono', monospace" }}>Your shoe size</p>
+        <SliderField label="Shoe size" sublabel="(US)" value={profile.sizeUS ?? 10} min={4} max={16} unit="" onChange={(v) => update("sizeUS", v)} />
+        <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>Not sure? Measure heel to longest toe in cm. Size 8 ≈ 26cm, size 10 ≈ 27.9cm, size 12 ≈ 30cm.</p>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 12, fontFamily: "'DM Mono', monospace" }}>How wide are your feet?</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: 10 }}>
+          {WIDTH_OPTIONS.map((w) => (
+            <OptionCard key={w.value} label={w.label} desc={w.desc} emoji={w.emoji}
+              selected={profile.width === w.value} onClick={() => update("width", w.value)} />
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 6, fontFamily: "'DM Mono', monospace" }}>What's your arch like?</p>
+        <p style={{ fontSize: 13, color: "var(--muted)", marginBottom: 12 }}>Tip: wet your foot and step on a paper bag or tile to see your footprint.</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+          {ARCH_OPTIONS.map((a) => (
+            <OptionCard key={a.value} label={a.label} desc={a.desc} guide={a.guide} emoji={a.emoji}
+              selected={profile.archType === a.value} onClick={() => update("archType", a.value)} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 function StepBody({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <SliderField label="Body weight (kg)" value={profile.bodyWeightKg ?? 75} min={40} max={180} unit="kg" onChange={(v) => update("bodyWeightKg", v)} />
-      <SliderField label="Weekly distance (km)" value={profile.weeklyKm ?? 20} min={0} max={150} unit="km" onChange={(v) => update("weeklyKm", v)} />
-      <SelectField label="Pronation" value={profile.pronation ?? ""} onChange={(v) => update("pronation", v)} options={[
-        { value: "underpronation", label: "Underpronation (supination)" },
-        { value: "neutral",        label: "Neutral" },
-        { value: "overpronation",  label: "Overpronation" },
-        { value: "neutral",        label: "Not sure" },
-      ]} />
-      <SelectField label="Foot strike" value={profile.footStrike ?? ""} onChange={(v) => update("footStrike", v)} options={[
-        { value: "heel",     label: "Heel striker" },
-        { value: "midfoot",  label: "Midfoot striker" },
-        { value: "forefoot", label: "Forefoot / toe striker" },
-        { value: "heel",     label: "Not sure" },
-      ]} />
+    <div style={{ display: "flex", flexDirection: "column", gap: 32, maxWidth: 560 }}>
+      <div>
+        <SliderField label="Your weight" value={profile.bodyWeightKg ?? 75} min={40} max={180} unit=" kg"
+          formatVal={(v) => `${v} kg`} onChange={(v) => update("bodyWeightKg", v)} />
+        <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>Heavier runners need more cushioning and support. This is one of the most important fit factors.</p>
+      </div>
+
+      <div>
+        <SliderField label="How often do you use them?" value={profile.weeklyKm ?? 0} min={0} max={100} unit=""
+          formatVal={(v) => v === 0 ? "Occasionally" : v < 20 ? `~${v}km / week` : v < 50 ? `~${v}km / week` : `${v}+ km / week`}
+          onChange={(v) => update("weeklyKm", v)} />
+        <p style={{ fontSize: 12, color: "var(--muted)", marginTop: 6 }}>More use = prioritise durability and long-run comfort over looks.</p>
+      </div>
+
+      <div>
+        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 10, fontFamily: "'DM Mono', monospace" }}>How do your feet tend to move?</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 10 }}>
+          {[
+            { value: "neutral",        label: "Normal — feet roll slightly inward", desc: "Most common. Foot lands and rolls slightly in.", emoji: "✅" },
+            { value: "overpronation",  label: "Feet roll quite far inward",          desc: "Inner sole wears down first. Ankles may ache.", emoji: "↩️" },
+            { value: "underpronation", label: "Feet roll outward",                   desc: "Outer sole wears first. Common with high arches.", emoji: "↪️" },
+            { value: "neutral",        label: "I have no idea",                      desc: "That's fine — we'll use your other answers.",     emoji: "🤷" },
+          ].map((o, i) => (
+            <OptionCard key={i} label={o.label} desc={o.desc} emoji={o.emoji}
+              selected={i === 3 ? false : profile.pronation === o.value} onClick={() => update("pronation", o.value)} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 function StepInjuries({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
   const selected: string[] = profile.injuryHistory ?? [];
-  const toggle = (injury: string) => {
-    if (injury === "None") { update("injuryHistory", []); return; }
-    const next = selected.includes(injury)
-      ? selected.filter((i) => i !== injury)
-      : [...selected.filter((i) => i !== "None"), injury];
+  const toggle = (val: string) => {
+    if (val === "none") { update("injuryHistory", []); return; }
+    const next = selected.includes(val) ? selected.filter(i => i !== val) : [...selected.filter(i => i !== "none"), val];
     update("injuryHistory", next);
   };
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-      {INJURIES.map((inj) => (
-        <OptionCard key={inj} label={inj} selected={selected.includes(inj) || (inj === "None" && selected.length === 0)} onClick={() => toggle(inj)} />
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 10 }}>
+      {INJURY_OPTIONS.map((inj) => (
+        <OptionCard key={inj.value} label={inj.label} desc={inj.desc}
+          selected={inj.value === "none" ? selected.length === 0 : selected.includes(inj.value)}
+          onClick={() => toggle(inj.value)} />
       ))}
     </div>
   );
@@ -191,28 +236,26 @@ function StepInjuries({ profile, update }: { profile: Partial<FootProfile>; upda
 
 function StepFeel({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: 28 }}>
       <div>
-        <p className="font-mono text-[10px] text-[#888580] uppercase tracking-widest mb-3">Cushioning preference</p>
-        <div className="grid grid-cols-3 gap-3">
-          {[
-            { value: "firm",   label: "Firm",   desc: "Ground feel, fast response" },
-            { value: "medium", label: "Medium", desc: "Balance of feel and protection" },
-            { value: "plush",  label: "Plush",  desc: "Max cushion, cloud-like" },
-          ].map((o) => (
-            <OptionCard key={o.value} label={o.label} desc={o.desc} selected={profile.cushionFeel === o.value} onClick={() => update("cushionFeel", o.value)} />
+        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 12, fontFamily: "'DM Mono', monospace" }}>How cushioned do you like them?</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
+          {CUSHION_OPTIONS.map((o) => (
+            <OptionCard key={o.value} label={o.label} desc={o.desc} emoji={o.emoji}
+              selected={profile.cushionFeel === o.value} onClick={() => update("cushionFeel", o.value)} />
           ))}
         </div>
       </div>
       <div>
-        <p className="font-mono text-[10px] text-[#888580] uppercase tracking-widest mb-3">Stack height preference</p>
-        <div className="grid grid-cols-3 gap-3">
+        <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 12, fontFamily: "'DM Mono', monospace" }}>How tall do you like the sole?</p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: 10 }}>
           {[
-            { value: "minimal",  label: "Minimal",  desc: "< 20mm stack" },
-            { value: "moderate", label: "Moderate", desc: "20–35mm stack" },
-            { value: "maximal",  label: "Maximal",  desc: "35mm+ stack" },
+            { value: "minimal",  label: "Low to the ground",    desc: "Thin sole, very close to the floor",         emoji: "📏" },
+            { value: "moderate", label: "Normal height",         desc: "Standard everyday shoe height",              emoji: "👟" },
+            { value: "maximal",  label: "Tall / chunky sole",    desc: "Maximum cushion, like Hokas or platform soles", emoji: "🥿" },
           ].map((o) => (
-            <OptionCard key={o.value} label={o.label} desc={o.desc} selected={profile.stackPreference === o.value} onClick={() => update("stackPreference", o.value)} />
+            <OptionCard key={o.value} label={o.label} desc={o.desc} emoji={o.emoji}
+              selected={profile.stackPreference === o.value} onClick={() => update("stackPreference", o.value)} />
           ))}
         </div>
       </div>
@@ -221,43 +264,47 @@ function StepFeel({ profile, update }: { profile: Partial<FootProfile>; update: 
 }
 
 function StepBudget({ profile, update }: { profile: Partial<FootProfile>; update: (k: keyof FootProfile, v: any) => void }) {
+  const budget = profile.budget ?? 150;
   return (
-    <div className="flex flex-col gap-8 max-w-md">
-      <SliderField label="Maximum budget (USD)" value={profile.budget ?? 150} min={50} max={400} unit="$" onChange={(v) => update("budget", v)} />
-      <div className="grid grid-cols-4 gap-2">
-        {[100, 150, 200, 300].map((b) => (
-          <button key={b} onClick={() => update("budget", b)}
-            className={cn("font-mono text-xs py-2 rounded-sm border transition-all",
-              profile.budget === b
-                ? "border-[rgba(232,255,74,0.5)] bg-[rgba(232,255,74,0.06)] text-[#E8FF4A]"
-                : "border-[rgba(255,255,255,0.08)] text-[#888580] hover:text-[#F0EEE8]"
-            )}>
-            ${b}
-          </button>
+    <div style={{ display: "flex", flexDirection: "column", gap: 24, maxWidth: 500 }}>
+      <SliderField label="Maximum budget" value={budget} min={30} max={400} unit="$"
+        formatVal={(v) => v >= 400 ? "No limit" : `$${v}`} onChange={(v) => update("budget", v)} />
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+        {[75, 120, 180, 250].map((b) => (
+          <button key={b} onClick={() => update("budget", b)} style={{
+            padding: "10px 0", borderRadius: 8, fontFamily: "'DM Mono', monospace", fontSize: 13, cursor: "pointer",
+            border: `1.5px solid ${budget === b ? "var(--accent)" : "var(--border)"}`,
+            background: budget === b ? "rgba(200,75,49,0.06)" : "var(--bg2)",
+            color: budget === b ? "var(--accent)" : "var(--muted)",
+            transition: "all 0.15s",
+          }}>${b}</button>
         ))}
+      </div>
+      <div style={{ padding: "16px 20px", background: "var(--bg2)", border: "1px solid var(--border)", borderRadius: 10, fontSize: 13, color: "var(--muted)", lineHeight: 1.6 }}>
+        {budget < 80 && "Budget range — we'll find the best value options available."}
+        {budget >= 80 && budget < 130 && "Sweet spot — lots of great shoes in this range from major brands."}
+        {budget >= 130 && budget < 200 && "Premium range — access to the top performance models."}
+        {budget >= 200 && "No compromises — the best of everything is within reach."}
       </div>
     </div>
   );
 }
 
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 
 const STEP_COMPONENTS = [StepUse, StepFoot, StepBody, StepInjuries, StepFeel, StepBudget];
 
 export default function FinderPage() {
   const [step, setStep] = useState(0);
-  const [profile, setProfile] = useState<Partial<FootProfile>>({ budget: 150, bodyWeightKg: 75, weeklyKm: 20, sizeUS: 10 });
+  const [profile, setProfile] = useState<Partial<FootProfile>>({ budget: 150, bodyWeightKg: 75, weeklyKm: 0, sizeUS: 10 });
   const [loading, setLoading] = useState(false);
 
-  const update = (key: keyof FootProfile, value: any) =>
-    setProfile((p) => ({ ...p, [key]: value }));
-
-  const next = () => { if (step < STEPS.length - 1) setStep((s) => s + 1); };
-  const prev = () => { if (step > 0) setStep((s) => s - 1); };
-
+  const update = (key: keyof FootProfile, value: any) => setProfile((p) => ({ ...p, [key]: value }));
+  const next = () => { if (step < STEPS.length - 1) setStep(s => s + 1); };
+  const prev = () => { if (step > 0) setStep(s => s - 1); };
   const submit = async () => {
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1800));
+    await new Promise(r => setTimeout(r, 1600));
     window.location.href = "/finder/results";
   };
 
@@ -266,67 +313,56 @@ export default function FinderPage() {
   const StepPanel = STEP_COMPONENTS[step];
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div style={{ minHeight: "100vh", display: "flex", flexDirection: "column", background: "var(--bg)" }}>
       {/* Progress bar */}
-      <div className="h-[2px] bg-[#1A1A1A]">
-        <div
-          className="h-full bg-[#E8FF4A] transition-all duration-500"
-          style={{ width: `${progress}%` }}
-        />
+      <div style={{ height: 3, background: "var(--bg3)" }}>
+        <div style={{ height: "100%", background: "var(--accent)", width: `${progress}%`, transition: "width 0.4s ease" }} />
       </div>
 
-      <div className="flex-1 flex flex-col max-w-3xl mx-auto w-full px-6 py-12">
-        {/* Step counter */}
-        <div className="flex items-center gap-3 mb-10">
-          <span className="font-mono text-xs text-[rgba(232,255,74,0.5)]">{String(step + 1).padStart(2, "0")}</span>
-          <div className="flex gap-1.5">
-            {STEPS.map((_, i) => (
-              <div key={i} className={cn("h-[2px] w-6 rounded-full transition-all duration-300", i <= step ? "bg-[#E8FF4A]" : "bg-[#1A1A1A]")} />
-            ))}
-          </div>
-          <span className="font-mono text-xs text-[#888580]">{String(STEPS.length).padStart(2, "0")}</span>
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", maxWidth: 760, margin: "0 auto", width: "100%", padding: "48px 24px 32px" }}>
+        {/* Step dots */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 40 }}>
+          {STEPS.map((_, i) => (
+            <div key={i} style={{
+              width: i === step ? 24 : 8, height: 8, borderRadius: 99,
+              background: i < step ? "var(--accent)" : i === step ? "var(--accent)" : "var(--bg3)",
+              transition: "all 0.3s ease", opacity: i > step ? 0.4 : 1,
+            }} />
+          ))}
+          <span style={{ marginLeft: 8, fontFamily: "'DM Mono', monospace", fontSize: 11, color: "var(--muted)" }}>
+            {step + 1} of {STEPS.length}
+          </span>
         </div>
 
         {/* Question */}
-        <div className="mb-8">
-          <h1 className="font-serif text-3xl md:text-4xl mb-2">{STEPS[step].title}</h1>
-          <p className="text-[#888580]">{STEPS[step].subtitle}</p>
+        <div style={{ marginBottom: 32 }}>
+          <h1 className="font-serif" style={{ fontSize: "clamp(26px, 4vw, 38px)", fontWeight: 300, marginBottom: 8, letterSpacing: "-0.01em", lineHeight: 1.2 }}>
+            {STEPS[step].title}
+          </h1>
+          <p style={{ color: "var(--muted)", fontSize: 15 }}>{STEPS[step].subtitle}</p>
         </div>
 
-        {/* Step content */}
-        <div className="flex-1 mb-10">
+        {/* Content */}
+        <div style={{ flex: 1, marginBottom: 32 }}>
           <StepPanel profile={profile} update={update} />
         </div>
 
-        {/* Navigation */}
-        <div className="flex items-center justify-between pt-6" style={{ borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-          <button
-            onClick={prev}
-            disabled={step === 0}
-            className={cn("btn-ghost flex items-center gap-2", step === 0 && "opacity-30 cursor-not-allowed")}
-          >
-            <ArrowLeft size={13} /> Back
+        {/* Nav */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingTop: 24, borderTop: "1px solid var(--border)" }}>
+          <button onClick={prev} disabled={step === 0} className="btn-ghost"
+            style={{ opacity: step === 0 ? 0.3 : 1, cursor: step === 0 ? "not-allowed" : "pointer" }}>
+            <ArrowLeft size={14} /> Back
           </button>
-
           {isLast ? (
-            <button
-              onClick={submit}
-              disabled={loading}
-              className="btn-primary flex items-center gap-2 min-w-[180px] justify-center"
-            >
+            <button onClick={submit} disabled={loading} className="btn-accent" style={{ minWidth: 180, justifyContent: "center" }}>
               {loading ? (
-                <>
-                  <span className="inline-block w-3 h-3 border border-[#0A0A0A] border-t-transparent rounded-full animate-spin" />
-                  Finding matches…
-                </>
+                <><span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.3)", borderTopColor: "#fff", borderRadius: "50%", display: "inline-block" }} className="animate-spin" /> Finding matches…</>
               ) : (
-                <>Find my shoes <ArrowRight size={13} /></>
+                <>Find my shoes <ArrowRight size={14} /></>
               )}
             </button>
           ) : (
-            <button onClick={next} className="btn-primary flex items-center gap-2">
-              Continue <ArrowRight size={13} />
-            </button>
+            <button onClick={next} className="btn-accent">Continue <ArrowRight size={14} /></button>
           )}
         </div>
       </div>

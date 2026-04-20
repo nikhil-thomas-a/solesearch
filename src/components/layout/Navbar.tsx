@@ -4,7 +4,6 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Search, Heart, Menu, X } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "/catalogue", label: "Catalogue" },
@@ -18,68 +17,56 @@ export function Navbar() {
 
   return (
     <>
-      <nav
-        style={{
-          position: "sticky", top: 0, zIndex: 50,
-          display: "flex", alignItems: "center", justifyContent: "space-between",
-          padding: "0 40px", height: "56px",
-          background: "rgba(10,10,10,0.92)",
-          backdropFilter: "blur(12px)",
-          borderBottom: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <Link href="/" className="font-mono" style={{ fontSize: 12, fontWeight: 500, letterSpacing: "0.15em", textTransform: "uppercase", color: "#E8FF4A", textDecoration: "none" }}>
+      <nav style={{
+        position: "sticky", top: 0, zIndex: 50,
+        display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "0 40px", height: "60px",
+        background: "rgba(247,245,240,0.92)", backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(0,0,0,0.08)",
+      }}>
+        <Link href="/" style={{ fontFamily: "'Fraunces', serif", fontSize: 20, fontWeight: 400, color: "#1A1814", textDecoration: "none", letterSpacing: "-0.01em" }}>
           SoleSearch
         </Link>
 
-        <ul style={{ display: "flex", alignItems: "center", gap: 28, listStyle: "none", margin: 0, padding: 0 }} className="hidden md:flex">
+        <ul style={{ display: "flex", alignItems: "center", gap: 6, listStyle: "none", margin: 0, padding: 0 }}>
           {NAV_LINKS.map((link) => (
             <li key={link.href}>
-              <Link
-                href={link.href}
-                className="font-mono"
-                style={{
-                  fontSize: 12,
-                  letterSpacing: "0.04em",
-                  textDecoration: "none",
-                  color: pathname.startsWith(link.href) ? "#F0EEE8" : "#888580",
-                  transition: "color 0.15s",
-                }}
-              >
+              <Link href={link.href} style={{
+                fontFamily: "'DM Sans', sans-serif", fontSize: 14, textDecoration: "none",
+                padding: "6px 14px", borderRadius: 8,
+                color: pathname.startsWith(link.href) ? "#1A1814" : "#7A7469",
+                background: pathname.startsWith(link.href) ? "rgba(0,0,0,0.06)" : "transparent",
+                transition: "all 0.15s", display: "inline-block",
+              }}>
                 {link.label}
               </Link>
             </li>
           ))}
         </ul>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <button className="btn-ghost hidden md:flex" style={{ gap: 6, fontSize: 12, padding: "6px 12px" }}>
-            <Search size={13} /> Search
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button className="btn-ghost" style={{ padding: "8px 14px", fontSize: 13, gap: 6 }}>
+            <Search size={14} /> Search
           </button>
-          <button className="btn-ghost hidden md:flex" style={{ gap: 6, fontSize: 12, padding: "6px 12px" }}>
-            <Heart size={13} /> Wishlist
+          <button className="btn-ghost" style={{ padding: "8px 14px", fontSize: 13, gap: 6 }}>
+            <Heart size={14} /> Wishlist
           </button>
-          <button className="btn-ghost hidden md:flex" style={{ fontSize: 12, padding: "6px 12px" }}>Sign in</button>
-          <button
-            className="md:hidden"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#888580" }}
-          >
-            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
+          <button className="btn-primary" style={{ padding: "8px 16px", fontSize: 13 }}>Sign in</button>
+          <button onClick={() => setMobileOpen(!mobileOpen)} style={{ display: "none", background: "none", border: "none", cursor: "pointer", color: "#7A7469" }} className="mobile-menu-btn">
+            {mobileOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
       </nav>
 
       {mobileOpen && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 40, paddingTop: 56, background: "rgba(10,10,10,0.98)", display: "flex", flexDirection: "column" }}>
-          <div style={{ display: "flex", flexDirection: "column", padding: "24px", gap: 24 }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 40, paddingTop: 60, background: "rgba(247,245,240,0.98)", display: "flex", flexDirection: "column" }}>
+          <div style={{ display: "flex", flexDirection: "column", padding: 24, gap: 20 }}>
             {NAV_LINKS.map((link) => (
-              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)} className="font-serif" style={{ fontSize: 28, color: "#F0EEE8", textDecoration: "none" }}>
+              <Link key={link.href} href={link.href} onClick={() => setMobileOpen(false)}
+                style={{ fontFamily: "'Fraunces', serif", fontSize: 32, color: "#1A1814", textDecoration: "none" }}>
                 {link.label}
               </Link>
             ))}
-            <div className="divider" />
-            <button className="btn-ghost" style={{ width: "100%" }}>Sign in</button>
           </div>
         </div>
       )}
