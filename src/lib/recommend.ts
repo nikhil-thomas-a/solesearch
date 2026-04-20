@@ -196,11 +196,11 @@ function scoreBudget(shoe: Shoe, profile: Partial<FootProfile>): { score: number
   const price = shoe.currentLow;
   const pct = price / budget;
 
-  if (pct <= 0.7)  return { score: 10, reason: `Well within budget at £${price} (${Math.round((1 - pct) * 100)}% under your limit)` };
-  if (pct <= 0.9)  return { score: 9,  reason: `Comfortably within your £${budget} budget` };
-  if (pct <= 1.0)  return { score: 7,  reason: `At £${price} — fits your budget` };
-  if (pct <= 1.1)  return { score: 4,  warning: `£${price} — £${price - budget} over your budget, but worth considering` };
-  return           { score: 2,  warning: `£${price} — noticeably over your £${budget} budget` };
+  if (pct <= 0.7)  return { score: 10, reason: `Well within budget at $${price} (${Math.round((1 - pct) * 100)}% under your limit)` };
+  if (pct <= 0.9)  return { score: 9,  reason: `Comfortably within your $${budget} budget` };
+  if (pct <= 1.0)  return { score: 7,  reason: `At $${price} — fits your budget` };
+  if (pct <= 1.1)  return { score: 4,  warning: `$${price} — $${Math.round(price - budget)} over your budget, but worth considering` };
+  return           { score: 2,  warning: `$${price} — noticeably over your $${budget} budget` };
 }
 
 /** 6. Injury suitability */
@@ -386,7 +386,7 @@ export function summariseProfile(profile: Partial<FootProfile>): string[] {
     const map = { firm: "prefers firm feel", medium: "balanced cushioning", plush: "wants plush cushioning" };
     lines.push(map[profile.cushionFeel]);
   }
-  if (profile.budget) lines.push(`budget £${profile.budget}`);
+  if (profile.budget) lines.push(`budget $${profile.budget}`);
   if (profile.injuryHistory?.length && !profile.injuryHistory.includes("none")) {
     lines.push(`${profile.injuryHistory.length} injury note${profile.injuryHistory.length > 1 ? "s" : ""}`);
   }

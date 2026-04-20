@@ -132,7 +132,7 @@ export default function ComparePage() {
                 <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Comparing</span>
               </th>
               {slots.map((shoe, i) => (
-                <th key={i} style={{ padding: "0 10px 20px", verticalAlign: "bottom", minWidth: 200 }}>
+                <th key={`header-${i}`} style={{ padding: "0 10px 20px", verticalAlign: "bottom", minWidth: 200 }}>
                   {shoe ? (
                     <div style={{ background: "var(--bg2)", border: `1px solid ${SLOT_COLORS[i]}33`, borderRadius: 12, overflow: "hidden", position: "relative" }}>
                       <div style={{ height: 3, background: SLOT_COLORS[i] }} />
@@ -192,7 +192,7 @@ export default function ComparePage() {
                         {row.note && <p style={{ fontSize: 10, color: "var(--muted)", marginTop: 2, fontFamily: "'DM Mono',monospace" }}>{row.note}</p>}
                       </td>
                       {slots.map((shoe, si) => (
-                        <td key={si} style={{ padding: "12px 10px", verticalAlign: "top" }}>
+                        <td key={`slot-${si}`} style={{ padding: "12px 10px", verticalAlign: "top" }}>
                           {shoe ? (() => {
                             const val = row.getValue(shoe);
                             const numVal = Number(val);

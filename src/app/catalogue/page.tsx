@@ -109,10 +109,10 @@ export default function CataloguePage() {
           <div style={{ marginBottom: 22, paddingTop: 16, borderTop: "1px solid var(--border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
               <p style={{ fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--muted)", textTransform: "uppercase", letterSpacing: "0.08em" }}>Max price</p>
-              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--accent)" }}>{maxPrice === 400 ? "Any" : "£" + maxPrice}</span>
+              <span style={{ fontFamily: "'DM Mono',monospace", fontSize: 11, color: "var(--accent)" }}>{maxPrice === 400 ? "Any" : "$" + maxPrice}</span>
             </div>
             <input type="range" min={50} max={400} step={10} value={maxPrice} onChange={e => setMaxPrice(Number(e.target.value))} style={{ width: "100%", accentColor: "var(--accent)" }} />
-            <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--muted)", marginTop: 4 }}><span>£50</span><span>£400</span></div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'DM Mono',monospace", fontSize: 10, color: "var(--muted)", marginTop: 4 }}><span>$50</span><span>$400</span></div>
           </div>
           <div style={{ paddingTop: 16, borderTop: "1px solid var(--border)" }}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>

@@ -13,8 +13,8 @@ export interface Region {
 }
 
 export const REGIONS: Region[] = [
-  { code: "UK", label: "🇬🇧 United Kingdom", currency: "GBP", symbol: "£",  sizeSystem: "UK", rateFromUSD: 0.79 },
   { code: "US", label: "🇺🇸 United States",  currency: "USD", symbol: "$",  sizeSystem: "US", rateFromUSD: 1.00 },
+  { code: "UK", label: "🇬🇧 United Kingdom", currency: "GBP", symbol: "£",  sizeSystem: "UK", rateFromUSD: 0.79 },
   { code: "EU", label: "🇪🇺 Europe",          currency: "EUR", symbol: "€",  sizeSystem: "EU", rateFromUSD: 0.92 },
   { code: "IN", label: "🇮🇳 India",           currency: "INR", symbol: "₹",  sizeSystem: "UK", rateFromUSD: 83.5 },
   { code: "AU", label: "🇦🇺 Australia",       currency: "AUD", symbol: "A$", sizeSystem: "US", rateFromUSD: 1.54 },
@@ -33,12 +33,12 @@ interface RegionContextValue {
 const RegionContext = createContext<RegionContextValue>({
   region:    REGIONS[0],
   setRegion: () => {},
-  fmt:       (p) => `£${Math.round(p * 0.79)}`,
-  convert:   (p) => Math.round(p * 0.79),
+  fmt:       (p) => `$${p}`,
+  convert:   (p) => p,
 });
 
 export function RegionProvider({ children }: { children: ReactNode }) {
-  const [region, setRegionState] = useState<Region>(REGIONS[0]); // Default UK
+  const [region, setRegionState] = useState<Region>(REGIONS[0]); // Default US ($)
 
   // Persist to localStorage
   useEffect(() => {

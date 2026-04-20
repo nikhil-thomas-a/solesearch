@@ -240,13 +240,13 @@ function StepBody({ profile, update }: { profile: Partial<FootProfile>; update: 
         <p style={{ fontSize: 13, fontWeight: 500, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--muted)", marginBottom: 10, fontFamily: "'DM Mono', monospace" }}>How do your feet tend to move?</p>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(190px, 1fr))", gap: 10 }}>
           {[
-            { value: "neutral",        label: "Normal — feet roll slightly inward", desc: "Most common. Foot lands and rolls slightly in.", emoji: "✅" },
-            { value: "overpronation",  label: "Feet roll quite far inward",          desc: "Inner sole wears down first. Ankles may ache.", emoji: "↩️" },
-            { value: "underpronation", label: "Feet roll outward",                   desc: "Outer sole wears first. Common with high arches.", emoji: "↪️" },
-            { value: "neutral",        label: "I have no idea",                      desc: "That's fine — we'll use your other answers.",     emoji: "🤷" },
-          ].map((o, i) => (
-            <OptionCard key={i} label={o.label} desc={o.desc} emoji={o.emoji}
-              selected={i === 3 ? false : profile.pronation === o.value} onClick={() => update("pronation", o.value)} />
+            { value: "neutral",        key: "normal",     label: "Normal — feet roll slightly inward", desc: "Most common. Foot lands and rolls slightly in.", emoji: "✅" },
+            { value: "overpronation",  key: "over",       label: "Feet roll quite far inward",          desc: "Inner sole wears down first. Ankles may ache.", emoji: "↩️" },
+            { value: "underpronation", key: "under",      label: "Feet roll outward",                   desc: "Outer sole wears first. Common with high arches.", emoji: "↪️" },
+            { value: "neutral",        key: "notsure",    label: "I have no idea",                      desc: "That's fine — we'll use your other answers.",     emoji: "🤷" },
+          ].map((o) => (
+            <OptionCard key={o.key} label={o.label} desc={o.desc} emoji={o.emoji}
+              selected={o.key !== 'notsure' && profile.pronation === o.value} onClick={() => update("pronation", o.value)} />
           ))}
         </div>
       </div>

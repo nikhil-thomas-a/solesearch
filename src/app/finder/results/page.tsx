@@ -203,7 +203,7 @@ export default function ResultsPage() {
     if (parsed.primaryUse) chips.push(parsed.primaryUse.replace(/-/g, " ").replace(/^\w/, c => c.toUpperCase()));
     if (parsed.width && parsed.width !== "regular") chips.push(`${parsed.width} fit`);
     if (parsed.cushionFeel) chips.push(parsed.cushionFeel);
-    if (parsed.budget) chips.push(`£${parsed.budget} budget`);
+    if (parsed.budget) chips.push(`$${parsed.budget} budget`);
     if (parsed.injuryHistory?.length && !parsed.injuryHistory.includes("none")) chips.push(`${parsed.injuryHistory.length} injury note${parsed.injuryHistory.length > 1 ? "s" : ""}`);
     setSummary(chips);
 
