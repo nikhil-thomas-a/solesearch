@@ -3,6 +3,8 @@ import { ArrowRight, FlaskConical, Brain, TrendingDown } from "lucide-react";
 import { CategoryCard } from "@/components/ui/CategoryCard";
 import { SHOE_COUNT, CATEGORY_COUNTS } from "@/data/shoes";
 
+const CAT_COUNT = Object.keys(CATEGORY_COUNTS).length;
+
 const CATEGORIES = [
   { emoji:"🏃", label:"Road running",    href:"/catalogue?category=road-running",    count: CATEGORY_COUNTS["road-running"]    ?? 0 },
   { emoji:"🏔️", label:"Trail running",   href:"/catalogue?category=trail-running",   count: CATEGORY_COUNTS["trail-running"]   ?? 0 },
@@ -51,7 +53,7 @@ export default function HomePage() {
           <div className="animate-fade-up" style={{ display:"flex", gap:28, marginTop:48, paddingTop:28, borderTop:"1px solid rgba(255,255,255,0.07)", flexWrap:"wrap", animationDelay:"0.3s" }}>
             {[
               [String(SHOE_COUNT), "shoes in database"],
-              ["12", "categories covered"],
+              [String(CAT_COUNT), "categories covered"],
               ["9", "match signals per shoe"],
               ["Free", "always"],
             ].map(([val, label]) => (
