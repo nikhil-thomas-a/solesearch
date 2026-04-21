@@ -605,17 +605,6 @@ export const SHOES: S[] = [
   },
 ];
 
-export const SHOES_BY_SLUG: Record<string, Shoe> = Object.fromEntries(SHOES.map(s => [s.slug, s]));
-
-export function getSimilarShoes(shoe: Shoe): Shoe[] {
-  return shoe.similarIds.map(id => SHOES.find(s => s.slug === id)).filter(Boolean) as Shoe[];
-}
-
-export const SHOE_COUNT = SHOES.length;
-export const CATEGORY_COUNTS: Record<string, number> = SHOES.reduce((acc, s) => {
-  acc[s.category] = (acc[s.category] || 0) + 1;
-  return acc;
-}, {} as Record<string, number>);
 
 // ── ADDITIONAL ROAD RUNNING ────────────────────────────────────────────────────
 const MORE_ROAD: S[] = [
@@ -1043,7 +1032,7 @@ const MORE_HEALTH: S[] = [
   },
 ];
 
-// ── Merge all additions into SHOES ────────────────────────────────────────────
+// ── Merge all additions into the main SHOES array ────────────────────────────
 SHOES.push(
   ...MORE_ROAD, ...MORE_TRAIL, ...MORE_SNEAKERS,
   ...BOOTS_SHOES, ...KIDS_SHOES, ...MORE_GYM,
@@ -1051,5 +1040,15 @@ SHOES.push(
   ...MORE_TENNIS, ...MORE_WIDE, ...MORE_HEALTH,
 );
 
-// ── Re-export derived helpers ─────────────────────────────────────────────────
-// (SHOES_BY_SLUG, getSimilarShoes, SHOE_COUNT, CATEGORY_COUNTS already exported above)
+// ── Exports (must come AFTER push so counts are accurate) ─────────────────────
+export const SHOES_BY_SLUG: Record<string, Shoe> = Object.fromEntries(SHOES.map(s => [s.slug, s]));
+
+export function getSimilarShoes(shoe: Shoe): Shoe[] {
+  return shoe.similarIds.map(id => SHOES.find(s => s.slug === id)).filter(Boolean) as Shoe[];
+}
+
+export const SHOE_COUNT = SHOES.length;
+export const CATEGORY_COUNTS: Record<string, number> = SHOES.reduce((acc, s) => {
+  acc[s.category] = (acc[s.category] || 0) + 1;
+  return acc;
+}, {} as Record<string, number>);

@@ -2,7 +2,13 @@
 
 > Data-driven shoe discovery. Find your perfect shoe through biomechanics-aware fit matching, real lab data, and multi-currency price tracking.
 
-**Live demo:** [Deploy to Vercel in 60 seconds](#deploy)
+**🔗 Live site: [solesearch-one.vercel.app](https://solesearch-one.vercel.app)**
+
+| | |
+|---|---|
+| **Quiz** | [solesearch-one.vercel.app/finder](https://solesearch-one.vercel.app/finder) |
+| **Catalogue** | [solesearch-one.vercel.app/catalogue](https://solesearch-one.vercel.app/catalogue) |
+| **Compare** | [solesearch-one.vercel.app/compare](https://solesearch-one.vercel.app/compare) |
 
 ---
 
@@ -24,19 +30,19 @@ SoleSearch is a full-stack shoe discovery platform that matches users to shoes b
 | Weight | 4% | Grams vs activity intensity |
 | Heel drop | 3% | mm vs foot strike pattern |
 
-Each signal returns a plain-English reason if positive and a warning if it's a compromise.
+Each signal returns a plain-English reason if positive and a warning if it's a compromise. The full engine is in [`src/lib/recommend.ts`](src/lib/recommend.ts) — 394 lines, fully documented.
 
 ---
 
 ## Features
 
 - **6-step plain-English quiz** — no jargon, wet-foot-test arch guide, UK/US/EU sizing toggle
-- **40 shoes across 12 categories** — road running, trail, basketball, football, tennis, gym, hiking, walking, sneakers, work safety, healthcare, wide/orthopaedic
-- **Full shoe detail pages** — 12 lab metrics with visual bars, price tracker with 7-month chart, fit guide, construction breakdown, review sentiment, similar shoes
+- **67 shoes across 14 categories** — road running, trail, basketball, football, tennis, gym, hiking, walking, sneakers, boots, kids, work safety, healthcare, wide/orthopaedic
+- **Full shoe detail pages** — 12 lab metrics with visual bars, 7-month price chart, fit guide, construction breakdown, review sentiment, similar shoes
 - **Live catalogue** — filter by category, brand, price, min CoreScore; live search; sort by score/price/weight
-- **Side-by-side compare** — searchable shoe picker, colour-coded score highlights, quick verdict cards
-- **Multi-currency** — GBP, USD, EUR, INR, AUD, CAD — all prices stored in USD, converted at display
-- **Price alerts** — per-shoe alert input wired to FastAPI backend
+- **Side-by-side compare** — searchable picker across all 67 shoes, colour-coded score highlights, quick verdict cards
+- **Multi-currency** — USD (default), GBP, EUR, INR, AUD, CAD — all prices stored in USD, converted at display via React Context
+- **Zero dependencies on external APIs** — entire recommendation engine runs client-side, no backend required to demo
 
 ---
 
@@ -44,12 +50,13 @@ Each signal returns a plain-English reason if positive and a warning if it's a c
 
 | Layer | Technology |
 |-------|-----------|
-| Frontend | Next.js 14 (App Router) + TypeScript |
-| Styling | Tailwind v4 + custom CSS design system |
-| State | React Context (RegionContext), sessionStorage (quiz profile) |
-| Backend (scaffold) | FastAPI (Python 3.11+) |
-| Database (ready) | PostgreSQL + pgvector schema in `backend/schema.sql` |
+| Frontend | Next.js 16 (App Router) + TypeScript |
+| Styling | Tailwind v4 + custom CSS design system (dark theme) |
+| State | React Context (RegionContext for currency), sessionStorage (quiz profile) |
 | Recommendation engine | Pure TypeScript, client-side, `src/lib/recommend.ts` |
+| Backend (scaffold) | FastAPI (Python 3.11+) — stubbed routes, ready to wire |
+| Database (ready) | PostgreSQL + pgvector schema in `backend/schema.sql` |
+| Hosting | Vercel (auto-deploys from `main` branch) |
 
 ---
 
@@ -58,75 +65,101 @@ Each signal returns a plain-English reason if positive and a warning if it's a c
 ```
 src/
 ├── app/
-│   ├── page.tsx                  Homepage
-│   ├── catalogue/page.tsx        Browse + filter (live)
-│   ├── shoes/[slug]/page.tsx     Shoe detail (full, all sections)
-│   ├── compare/page.tsx          3-slot comparison with shoe picker
+│   ├── page.tsx                  Homepage (counts pull from real data)
+│   ├── catalogue/page.tsx        Browse + filter (live, client-side)
+│   ├── shoes/[slug]/page.tsx     Full shoe detail (6 sections)
+│   ├── compare/page.tsx          3-slot comparison with searchable picker
 │   ├── finder/page.tsx           6-step quiz
 │   └── finder/results/page.tsx  Live ranked results with explanations
 ├── components/
-│   ├── layout/Navbar.tsx         Dark nav + region/currency switcher
+│   ├── layout/Navbar.tsx         Dark nav + region/currency dropdown
 │   └── ui/  CategoryCard, Pill, ScoreBar, ScoreRing
-├── data/shoes.ts                 40-shoe dataset (all categories)
+├── data/
+│   └── shoes.ts                 67-shoe dataset across 14 categories
 ├── lib/
-│   ├── recommend.ts              9-signal recommendation engine
-│   ├── regionContext.tsx         Global currency/region context
-│   └── utils.ts                 Helpers
-└── types/index.ts               Full TypeScript model
+│   ├── recommend.ts              9-signal recommendation engine (394 lines)
+│   ├── regionContext.tsx         Global currency/region React Context
+│   └── utils.ts                 Helpers (scoreColor, heelDropLabel, softnessLabel)
+└── types/index.ts               Full TypeScript model (Shoe, FootProfile, Recommendation)
 backend/
-├── main.py                       FastAPI scaffold (all routes stubbed)
+├── main.py                       FastAPI scaffold (all routes stubbed, ready to wire)
 └── schema.sql                    PostgreSQL + pgvector schema
 ```
 
 ---
 
-## Getting started
+## Getting started locally
 
 ```bash
+git clone https://github.com/nikhil-thomas-a/solesearch-app
+cd solesearch-app
 npm install
-npm run dev        # → localhost:3000
+npm run dev
+# → http://localhost:3000
 ```
 
-Backend (optional — frontend works standalone):
+No environment variables required — the frontend works fully standalone.
+
+**Backend (optional):**
 ```bash
 pip install fastapi uvicorn psycopg2-binary python-dotenv
 echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/solesearch" > backend/.env
 psql -U postgres -d solesearch -f backend/schema.sql
-python backend/main.py   # → localhost:8000/docs
+python backend/main.py
+# → http://localhost:8000/docs
 ```
 
 ---
 
-## Deploy to Vercel
+## Deploying to Vercel
 
+The site deploys automatically from the `main` branch via Vercel's GitHub integration.
+
+**First-time setup:**
+1. Push the repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → Import your GitHub repo
+3. Vercel auto-detects Next.js — no configuration needed
+4. Click Deploy → live in ~60 seconds
+
+**Or via CLI:**
 ```bash
-npm i -g vercel && vercel
+npm i -g vercel
+vercel
 ```
 
-Or: vercel.com → New Project → Import from GitHub → deploy in ~60 seconds.
+**Custom domain:** Vercel dashboard → Settings → Domains → Add your domain.
+
+Every push to `main` triggers an automatic redeploy. Pull request previews are created automatically.
+
+---
+
+## Data
+
+Lab measurements (weight, drop, stack heights, midsole hardness, energy return %, toebox dimensions, breathability, grip scores) are sourced from:
+
+- Published brand spec sheets
+- Running Warehouse's independently measured specs
+- Aggregated expert review data from major shoe review publications
+
+Scores are editorial aggregates. No brand payments influence any score.
+
+**Goal:** A data partnership with [RunRepeat](https://runrepeat.com) — their physical lab measurements (30+ metrics per shoe, cut-open testing, durometer readings) powering this recommendation engine.
 
 ---
 
 ## Roadmap
 
-- [x] Phase 1 — UI foundations (shoe detail, design system)
-- [x] Phase 2 — Project scaffold (Next.js, TypeScript, Tailwind v4)
+- [x] Phase 1 — UI foundations (shoe detail, design system, dark theme)
+- [x] Phase 2 — Project scaffold (Next.js 16, TypeScript, Tailwind v4)
 - [x] Phase 3 — Recommendation engine (9-signal scoring, plain-English results)
-- [x] Phase 4 — Full dataset (40 shoes, 12 categories)
-- [x] Phase 5 — Multi-currency (GBP/USD/EUR/INR/AUD/CAD)
-- [ ] Phase 6 — Supabase integration (live data from `backend/schema.sql`)
-- [ ] Phase 7 — Price scraper (public retailer spec pages)
+- [x] Phase 4 — Full dataset (67 shoes, 14 categories)
+- [x] Phase 5 — Multi-currency (USD/GBP/EUR/INR/AUD/CAD via React Context)
+- [x] Phase 6 — Vercel deployment with auto-deploy from GitHub
+- [ ] Phase 7 — Supabase integration (replace static data with live DB)
 - [ ] Phase 8 — RunRepeat data partnership (lab data licensing)
-- [ ] Phase 9 — User auth + wishlists (NextAuth.js)
-- [ ] Phase 10 — AI explanations (Claude API for richer match reasons)
-
----
-
-## Data philosophy
-
-Lab measurements (weight, drop, stack heights, midsole hardness, energy return, toebox dimensions) are sourced from published brand spec sheets, Running Warehouse's independently measured specs, and aggregated expert review data. Scores are editorial aggregates. No brand payments. Every data point is citable.
-
-The goal is a data partnership with [RunRepeat](https://runrepeat.com) — their lab data + our discovery and recommendation layer.
+- [ ] Phase 9 — Affiliate links (Nike, ASICS, Running Warehouse, Zappos)
+- [ ] Phase 10 — User auth + wishlists (NextAuth.js)
+- [ ] Phase 11 — AI match explanations (Claude API)
 
 ---
 
